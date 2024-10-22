@@ -1,18 +1,31 @@
 "use client";
 
-import React, { useState} from "react";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setCredentials,
+  loginSuccess,
+  saveUser,
+  addTodo,
+  updateTodo,
+  deleteTodo,
+  setEditIndex,
+} from "../store/actions";
 
 export default function Home() {
-  const [users, setUsers] = useState([]);
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const [authenticated, setAuthenticated] = useState(false);
-  const [todo, setTodo] = useState(""); // Single todo item
-  const [todos, setTodos] = useState([]); // Array of todo items
-  const [editIndex, setEditIndex] = useState(null);
+  const dispatch = useDispatch();
+  const {
+    users,
+    credentials,
+    authenticated,
+  } = useSelector((state) => state.auth);
+  const { todos, editIndex } = useSelector((state) => state.todo);
+
+  const [todo, setTodo] = React.useState("");
 
   // Handle input changes for login form
   const handleLoginChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    dispatch(setCredentials({ ...credentials, [e.target.name]: e.target.value }));
   };
 
   // Handle login form submission
@@ -26,15 +39,14 @@ export default function Home() {
     );
 
     if (userExists) {
-      setAuthenticated(true);
+      dispatch(loginSuccess());
       alert("Login successful!");
     } else {
-      setUsers([...users, credentials]);
-      setAuthenticated(true);
-      alert("User Saved successfully!");
+      dispatch(saveUser(credentials));
+      alert("User saved successfully!");
     }
 
-    setCredentials({ email: "", password: "" });
+    dispatch(setCredentials({ email: "", password: "" }));
   };
 
   // Handle input change for to-dos
@@ -47,33 +59,30 @@ export default function Home() {
     e.preventDefault();
 
     if (editIndex !== null) {
-      const updatedTodos = [...todos];
-      updatedTodos[editIndex] = todo;
-      setTodos(updatedTodos);
-      setEditIndex(null);
-      alert("Todo updated successfully!");
+      dispatch(updateTodo(editIndex, { id: editIndex, text: todo })); // Ensure todo has an ID
+      setTodo("");
+      dispatch(setEditIndex(null)); // Reset edit index after update
     } else {
       if (todo.trim()) {
-        setTodos([...todos, todo]);
+        dispatch(addTodo({ id: Date.now(), text: todo })); // Create a new todo with a unique ID
+        setTodo(""); // Clear input after adding
       } else {
-        alert("Please Enter a Task.");
+        alert("Please enter a task.");
       }
     }
-
-    setTodo("");
   };
 
   // Handle deleting a todo
-  const handleDeleteTodo = (index) => {
-    const filteredTodos = todos.filter((_, i) => i !== index);
-    setTodos(filteredTodos);
+  const handleDeleteTodo = (id) => {
+    dispatch(deleteTodo(id));
     alert("Todo deleted successfully!");
   };
 
   // Handle editing a todo
-  const handleEditTodo = (index) => {
-    setTodo(todos[index]);
-    setEditIndex(index);
+  const handleEditTodo = (id) => {
+    const todoToEdit = todos.find((task) => task.id === id);
+    setTodo(todoToEdit.text);
+    dispatch(setEditIndex(id)); // Set edit index for the current todo
   };
 
   return (
@@ -111,9 +120,7 @@ export default function Home() {
                 }}
                 required
               />
-              <h1 style={{ marginTop: "15px", marginLeft: "10px" }}>
-                Password:
-              </h1>
+              <h1 style={{ marginTop: "15px", marginLeft: "10px" }}>Password:</h1>
               <input
                 type="password"
                 id="password"
@@ -147,7 +154,7 @@ export default function Home() {
                   borderRadius: "4px",
                   cursor: "pointer",
                   border: "1px solid yellow ",
-                  textAlign: "centre",
+                  textAlign: "center",
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
@@ -159,11 +166,8 @@ export default function Home() {
           </form>
         </div>
       ) : (
-        // Display the To-Do app once authenticated
         <div>
-          <h1
-            style={{ fontSize: "50px", color: "yellow", textAlign: "center" }}
-          >
+          <h1 style={{ fontSize: "50px", color: "yellow", textAlign: "center" }}>
             Shopping List
           </h1>
           <form
@@ -199,7 +203,7 @@ export default function Home() {
                 borderRadius: "4px",
                 cursor: "pointer",
                 border: "1px solid yellow ",
-                textAlign: "centre",
+                textAlign: "center",
               }}
             >
               {editIndex !== null ? "Update Task" : "Add Task"}
@@ -207,9 +211,9 @@ export default function Home() {
           </form>
 
           <ul>
-            {todos.map((task, index) => (
+            {todos.map((task) => (
               <li
-                key={index}
+                key={task.id}
                 style={{
                   padding: "10px 0",
                   listStyleType: "none",
@@ -219,11 +223,11 @@ export default function Home() {
                   alignItems: "center",
                 }}
               >
-                <span>{task}</span>
+                <span>{task.text}</span>
 
                 <div style={{ display: "flex", gap: "10px" }}>
                   <button
-                    onClick={() => handleEditTodo(index)}
+                    onClick={() => handleEditTodo(task.id)}
                     style={{
                       padding: "5px 10px",
                       backgroundColor: "#484848",
@@ -236,7 +240,7 @@ export default function Home() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDeleteTodo(index)}
+                    onClick={() => handleDeleteTodo(task.id)}
                     style={{
                       background: "none",
                       border: "none",
