@@ -1,101 +1,261 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState} from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [users, setUsers] = useState([]);
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [authenticated, setAuthenticated] = useState(false);
+  const [todo, setTodo] = useState(""); // Single todo item
+  const [todos, setTodos] = useState([]); // Array of todo items
+  const [editIndex, setEditIndex] = useState(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  // Handle input changes for login form
+  const handleLoginChange = (e) => {
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  };
+
+  // Handle login form submission
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+
+    const userExists = users.some(
+      (user) =>
+        user.email === credentials.email &&
+        user.password === credentials.password
+    );
+
+    if (userExists) {
+      setAuthenticated(true);
+      alert("Login successful!");
+    } else {
+      setUsers([...users, credentials]);
+      setAuthenticated(true);
+      alert("User Saved successfully!");
+    }
+
+    setCredentials({ email: "", password: "" });
+  };
+
+  // Handle input change for to-dos
+  const handleTodoChange = (e) => {
+    setTodo(e.target.value);
+  };
+
+  // Handle to-do form submission (Create or Update)
+  const handleTodoSubmit = (e) => {
+    e.preventDefault();
+
+    if (editIndex !== null) {
+      const updatedTodos = [...todos];
+      updatedTodos[editIndex] = todo;
+      setTodos(updatedTodos);
+      setEditIndex(null);
+      alert("Todo updated successfully!");
+    } else {
+      if (todo.trim()) {
+        setTodos([...todos, todo]);
+      } else {
+        alert("Please Enter a Task.");
+      }
+    }
+
+    setTodo("");
+  };
+
+  // Handle deleting a todo
+  const handleDeleteTodo = (index) => {
+    const filteredTodos = todos.filter((_, i) => i !== index);
+    setTodos(filteredTodos);
+    alert("Todo deleted successfully!");
+  };
+
+  // Handle editing a todo
+  const handleEditTodo = (index) => {
+    setTodo(todos[index]);
+    setEditIndex(index);
+  };
+
+  return (
+    <div>
+      {!authenticated ? (
+        // Display login form if not authenticated
+        <div style={{ width: "100%", margin: "0 auto" }}>
+          <h2 style={{ textAlign: "center", fontSize: "40px" }}>Login</h2>
+          <form
+            onSubmit={handleLoginSubmit}
+            style={{
+              backgroundColor: "black",
+              padding: "20px",
+              borderRadius: "8px",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <div style={{ display: "flex" }}>
+              <h1 style={{ marginTop: "15px", marginRight: "10px" }}>Email:</h1>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={credentials.email}
+                onChange={handleLoginChange}
+                style={{
+                  display: "inline-block",
+                  borderRadius: "5px",
+                  display: "block",
+                  padding: "10px",
+                  marginTop: "5px",
+                  marginBottom: "10px",
+                  width: "30%",
+                  color: "black",
+                  backgroundColor: "#696969",
+                }}
+                required
+              />
+              <h1 style={{ marginTop: "15px", marginLeft: "10px" }}>
+                Password:
+              </h1>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={credentials.password}
+                onChange={handleLoginChange}
+                style={{
+                  display: "inline-block",
+                  borderRadius: "5px",
+                  display: "block",
+                  padding: "10px",
+                  marginTop: "5px",
+                  marginBottom: "10px",
+                  marginLeft: "10px",
+                  width: "30%",
+                  color: "black",
+                  backgroundColor: "#696969",
+                }}
+                required
+              />
+              <button
+                type="submit"
+                style={{
+                  height: "40px",
+                  width: "100px",
+                  marginTop: "6px",
+                  marginLeft: "10px",
+                  padding: "10px 20px",
+                  backgroundColor: "#484848",
+                  color: "yellow",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  border: "1px solid yellow ",
+                  textAlign: "centre",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                Login
+              </button>
+            </div>
+          </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      ) : (
+        // Display the To-Do app once authenticated
+        <div>
+          <h1
+            style={{ fontSize: "50px", color: "yellow", textAlign: "center" }}
+          >
+            Shopping List
+          </h1>
+          <form
+            onSubmit={handleTodoSubmit}
+            style={{
+              marginBottom: "20px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Enter a task"
+              value={todo}
+              onChange={handleTodoChange}
+              style={{
+                padding: "10px",
+                width: "300px",
+                marginRight: "10px",
+                color: "black",
+              }}
+              required
+            />
+            <button
+              type="submit"
+              style={{
+                marginTop: "6px",
+                marginLeft: "10px",
+                padding: "10px 20px",
+                backgroundColor: "#484848",
+                color: "yellow",
+                borderRadius: "4px",
+                cursor: "pointer",
+                border: "1px solid yellow ",
+                textAlign: "centre",
+              }}
+            >
+              {editIndex !== null ? "Update Task" : "Add Task"}
+            </button>
+          </form>
+
+          <ul>
+            {todos.map((task, index) => (
+              <li
+                key={index}
+                style={{
+                  padding: "10px 0",
+                  listStyleType: "none",
+                  borderBottom: "1px solid yellow",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span>{task}</span>
+
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    onClick={() => handleEditTodo(index)}
+                    style={{
+                      padding: "5px 10px",
+                      backgroundColor: "#484848",
+                      color: "yellow",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      border: "1px solid yellow",
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTodo(index)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "yellow",
+                      cursor: "pointer",
+                      fontSize: "18px",
+                      fontWeight: "bold",
+                      padding: "0",
+                    }}
+                    aria-label="Delete"
+                  >
+                    &#10006;
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
