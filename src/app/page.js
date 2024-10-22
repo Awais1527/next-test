@@ -285,7 +285,7 @@ export default function Home() {
             padding: '20px',
             boxShadow: '-2px 0 5px rgba(0, 0, 0, 0.1)',
           }}>
-            <h1 style={{ color: 'green' }}>Right Side Content</h1>
+       
           </div>
         </div>
       )}
