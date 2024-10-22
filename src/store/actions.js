@@ -1,4 +1,4 @@
-// Action Types
+
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const SAVE_USER = 'SAVE_USER';
 export const SET_CREDENTIALS = 'SET_CREDENTIALS';
@@ -7,7 +7,7 @@ export const UPDATE_TODO = 'UPDATE_TODO';
 export const DELETE_TODO = 'DELETE_TODO';
 export const SET_EDIT_INDEX = 'SET_EDIT_INDEX';
 
-// Action Creators for Authentication
+
 export const loginSuccess = () => ({
   type: LOGIN_SUCCESS,
 });
@@ -22,7 +22,7 @@ export const setCredentials = (credentials) => ({
   payload: credentials,
 });
 
-// Action Creators for Todos
+
 export const addTodo = (todo) => ({
   type: ADD_TODO,
   payload: todo,

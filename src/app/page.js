@@ -1,31 +1,18 @@
 "use client";
 
-import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  setCredentials,
-  loginSuccess,
-  saveUser,
-  addTodo,
-  updateTodo,
-  deleteTodo,
-  setEditIndex,
-} from "../store/actions";
+import React, { useState} from "react";
 
 export default function Home() {
-  const dispatch = useDispatch();
-  const {
-    users,
-    credentials,
-    authenticated,
-  } = useSelector((state) => state.auth);
-  const { todos, editIndex } = useSelector((state) => state.todo);
-
-  const [todo, setTodo] = React.useState("");
+  const [users, setUsers] = useState([]);
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [authenticated, setAuthenticated] = useState(false);
+  const [todo, setTodo] = useState(""); // Single todo item
+  const [todos, setTodos] = useState([]); // Array of todo items
+  const [editIndex, setEditIndex] = useState(null);
 
   // Handle input changes for login form
   const handleLoginChange = (e) => {
-    dispatch(setCredentials({ ...credentials, [e.target.name]: e.target.value }));
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
   // Handle login form submission
@@ -39,14 +26,15 @@ export default function Home() {
     );
 
     if (userExists) {
-      dispatch(loginSuccess());
+      setAuthenticated(true);
       alert("Login successful!");
     } else {
-      dispatch(saveUser(credentials));
-      alert("User saved successfully!");
+      setUsers([...users, credentials]);
+      setAuthenticated(true);
+      alert("User Saved successfully!");
     }
 
-    dispatch(setCredentials({ email: "", password: "" }));
+    setCredentials({ email: "", password: "" });
   };
 
   // Handle input change for to-dos
@@ -59,36 +47,39 @@ export default function Home() {
     e.preventDefault();
 
     if (editIndex !== null) {
-      dispatch(updateTodo(editIndex, { id: editIndex, text: todo })); // Ensure todo has an ID
-      setTodo("");
-      dispatch(setEditIndex(null)); // Reset edit index after update
+      const updatedTodos = [...todos];
+      updatedTodos[editIndex] = todo;
+      setTodos(updatedTodos);
+      setEditIndex(null);
+      alert("Todo updated successfully!");
     } else {
       if (todo.trim()) {
-        dispatch(addTodo({ id: Date.now(), text: todo })); // Create a new todo with a unique ID
-        setTodo(""); // Clear input after adding
+        setTodos([...todos, todo]);
       } else {
-        alert("Please enter a task.");
+        alert("Please Enter a Task.");
       }
     }
+
+    setTodo("");
   };
 
   // Handle deleting a todo
-  const handleDeleteTodo = (id) => {
-    dispatch(deleteTodo(id));
+  const handleDeleteTodo = (index) => {
+    const filteredTodos = todos.filter((_, i) => i !== index);
+    setTodos(filteredTodos);
     alert("Todo deleted successfully!");
   };
 
   // Handle editing a todo
-  const handleEditTodo = (id) => {
-    const todoToEdit = todos.find((task) => task.id === id);
-    setTodo(todoToEdit.text);
-    dispatch(setEditIndex(id)); // Set edit index for the current todo
+  const handleEditTodo = (index) => {
+    setTodo(todos[index]);
+    setEditIndex(index);
   };
 
   return (
     <div>
       {!authenticated ? (
-        // Display login form if not authenticated
+     
         <div style={{ width: "100%", margin: "0 auto" }}>
           <h2 style={{ textAlign: "center", fontSize: "40px" }}>Login</h2>
           <form
@@ -120,7 +111,9 @@ export default function Home() {
                 }}
                 required
               />
-              <h1 style={{ marginTop: "15px", marginLeft: "10px" }}>Password:</h1>
+              <h1 style={{ marginTop: "15px", marginLeft: "10px" }}>
+                Password:
+              </h1>
               <input
                 type="password"
                 id="password"
@@ -154,7 +147,7 @@ export default function Home() {
                   borderRadius: "4px",
                   cursor: "pointer",
                   border: "1px solid yellow ",
-                  textAlign: "center",
+                  textAlign: "centre",
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
@@ -166,99 +159,137 @@ export default function Home() {
           </form>
         </div>
       ) : (
-        <div>
-          <h1 style={{ fontSize: "50px", color: "yellow", textAlign: "center" }}>
-            Shopping List
-          </h1>
-          <form
-            onSubmit={handleTodoSubmit}
-            style={{
-              marginBottom: "20px",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Enter a task"
-              value={todo}
-              onChange={handleTodoChange}
-              style={{
-                padding: "10px",
-                width: "300px",
-                marginRight: "10px",
-                color: "black",
-              }}
-              required
-            />
-            <button
-              type="submit"
-              style={{
-                marginTop: "6px",
-                marginLeft: "10px",
-                padding: "10px 20px",
-                backgroundColor: "#484848",
-                color: "yellow",
-                borderRadius: "4px",
-                cursor: "pointer",
-                border: "1px solid yellow ",
-                textAlign: "center",
-              }}
-            >
-              {editIndex !== null ? "Update Task" : "Add Task"}
-            </button>
-          </form>
-
-          <ul>
-            {todos.map((task) => (
-              <li
-                key={task.id}
-                style={{
-                  padding: "10px 0",
-                  listStyleType: "none",
-                  borderBottom: "1px solid yellow",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span>{task.text}</span>
-
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <button
-                    onClick={() => handleEditTodo(task.id)}
+        <div style={{ display: 'flex', width: '100vw', height: '100vh' }}>
+        {/* Left Div */}
+        <div style={{
+            flex: 1, 
+            display: 'flex',
+            justifyContent: 'center',
+         
+            backgroundColor: 'black',
+            padding: '20px',
+            boxShadow: '2px 0 5px rgba(0, 0, 0, 0.1)',
+        }}>
+         
+            <div style={{
+                width: '80%', 
+                display: 'flex',
+                flexDirection: 'column', 
+                alignItems: 'center',
+            }}>
+                <h1 style={{ fontSize: "50px", color: "white", textAlign: "center" }}>
+                    <strong>Shopping List</strong>
+                </h1>
+                <form
+                    onSubmit={handleTodoSubmit}
                     style={{
-                      padding: "5px 10px",
-                      backgroundColor: "#484848",
-                      color: "yellow",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      border: "1px solid yellow",
+                        marginBottom: "20px",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        width: '100%', 
                     }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTodo(task.id)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "yellow",
-                      cursor: "pointer",
-                      fontSize: "18px",
-                      fontWeight: "bold",
-                      padding: "0",
-                    }}
-                    aria-label="Delete"
-                  >
-                    &#10006;
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                >
+                    <input
+                        type="text"
+                        placeholder="Enter a task"
+                        value={todo}
+                        onChange={handleTodoChange}
+                        style={{
+                            padding: "10px",
+                            width: "70%", 
+                            marginRight: "10px",
+                            color: "black",
+                        }}
+                        required
+                    />
+                    <button
+                        type="submit"
+                        style={{
+                            marginLeft: "10px",
+                            padding: "10px 20px",
+                            backgroundColor: "#484848",
+                            color: "yellow",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            border: "1px solid yellow",
+                            textAlign: "center",
+                        }}
+                    >
+                        {editIndex !== null ? "Update Task" : "Add Task"}
+                    </button>
+                </form>
+    
+                <ul style={{ padding: 0, width: '100%' }}> 
+                    {todos.map((task, index) => (
+                        <li
+                            key={index}
+                            style={{
+                                padding: "10px 0",
+                                listStyleType: "none",
+                                borderBottom: "1px solid yellow",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                            }}
+                        >
+                            <span>{task}</span>
+    
+                            <div style={{ display: "flex", gap: "10px" }}>
+                                <button
+                                    onClick={() => handleEditTodo(index)}
+                                    style={{
+                                        padding: "5px 10px",
+                                        backgroundColor: "#484848",
+                                        color: "yellow",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                        border: "1px solid yellow",
+                                    }}
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteTodo(index)}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        color: "yellow",
+                                        cursor: "pointer",
+                                        fontSize: "18px",
+                                        fontWeight: "bold",
+                                        padding: "0",
+                                    }}
+                                    aria-label="Delete"
+                                >
+                                    &#10006;
+                                </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </div>
+    
+        {/* Right Div */}
+        <div style={{
+           flex: 1,
+           display: 'flex',
+           justifyContent: 'center',
+           alignItems: 'center',
+           backgroundImage: `url('/pp.png')`,
+           backgroundSize: 'cover',
+           backgroundPosition: 'center',
+           backgroundRepeat: 'no-repeat',
+           padding: '20px',
+           boxShadow: '-2px 0 5px rgba(0, 0, 0, 0.1)',
+        }}>
+            <h1 style={{ color: 'green' }}>Right Side Content</h1>
+        </div>
+    </div>
+    
+    
+        
       )}
     </div>
   );
