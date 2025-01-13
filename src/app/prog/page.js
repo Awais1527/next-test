@@ -2,7 +2,7 @@
 import ProgressBar from '@/components/ProgressBar'
 import React, { useEffect, useState } from 'react'
 
-export default function page() {
+export default function Page() {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
     const handleScroll = () => {
