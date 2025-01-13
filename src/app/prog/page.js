@@ -20,6 +20,7 @@ export default function page() {
   return (
     <div>
       <div>
+    
       <ProgressBar progress={progress} />
       <div style={{ height: '150vh', padding: '20px' }}>
         <h1>Scroll to see the progress bar in action!</h1>
